@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="#FF0000" />
+    <!-- Use the color resource instead of a hardcoded value -->
+    <solid android:color="@color/red_dot_color" />
     <stroke android:width="2dp" android:color="?attr/colorOnPrimary"/>
 </shape>
