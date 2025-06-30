@@ -1,20 +1,28 @@
 package com.ms.myworld
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.ms.myworld.databinding.ActivitySettingsBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var auth: FirebaseAuth
+    // --- NEW: Add a reference to the Firestore database ---
+    private val db = Firebase.firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,17 +38,11 @@ class SettingsActivity : AppCompatActivity() {
         binding.passwordButton.setOnClickListener {
             val user = auth.currentUser ?: return@setOnClickListener
 
-            // THIS IS THE NEW SMART LOGIC
-            // Check what sign-in methods the user has.
             val providers = user.providerData.map { it.providerId }
 
             if (EmailAuthProvider.PROVIDER_ID in providers) {
-                // If they have a password provider, it means they are an email user
-                // or a Google user who has already set a password. Show the CHANGE dialog.
                 showChangePasswordDialog()
             } else {
-                // If they do not have a password provider, it means they are a Google user
-                // who needs to set a password for the first time. Show the SET dialog.
                 showSetPasswordDialog()
             }
         }
@@ -48,6 +50,38 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun updateUI() {
         val user = auth.currentUser ?: return
+
+        // --- THIS IS THE NEW LOGIC TO GET THE SHORT ID ---
+        // We will fetch the shortId from the Firestore database.
+        binding.userIdTextView.text = "Loading..." // Show a loading message
+        val userDocRef = db.collection("users").document(user.uid)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val document = userDocRef.get().await()
+                val shortId = if (document != null && document.exists()) {
+                    // If the document exists, get the shortId
+                    document.getString("shortId") ?: user.uid // Fallback to long ID if field is missing
+                } else {
+                    // If document doesn't exist (for older users), show the long ID as a fallback
+                    user.uid
+                }
+
+                // Update the UI on the main thread
+                withContext(Dispatchers.Main) {
+                    binding.userIdTextView.text = shortId
+                }
+            } catch (e: Exception) {
+                Log.e("SETTINGS_ERROR", "Error fetching user document", e)
+                withContext(Dispatchers.Main) {
+                    // If there's an error, show the long ID
+                    binding.userIdTextView.text = user.uid
+                }
+            }
+        }
+        // --- END OF NEW LOGIC ---
+
+
         binding.userInfoTextView.text = user.email
 
         val providers = user.providerData.map { it.providerId }
@@ -62,14 +96,14 @@ class SettingsActivity : AppCompatActivity() {
             binding.passwordButton.text = "Change Password"
         }
 
-        binding.changeEmailButton.isEnabled = false // Remains disabled as requested
+        binding.changeEmailButton.isEnabled = false
     }
 
     private fun showSetPasswordDialog() {
         val setPasswordSheet = SetPasswordBottomSheet()
         setPasswordSheet.setOnPasswordSetListener { passwordWasSet ->
             if (passwordWasSet) {
-                updateUI() // Refresh the screen to hide the warning card and update button text
+                updateUI()
             }
         }
         setPasswordSheet.show(supportFragmentManager, "SettingsSetPasswordSheet")
@@ -78,9 +112,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun showChangePasswordDialog() {
         val changePasswordSheet = ChangePasswordBottomSheet()
         changePasswordSheet.setOnPasswordChangeListener { passwordWasChanged ->
-            if (passwordWasChanged) {
-                // No UI change is needed here, but we could add a success message
-            }
+            // No action needed here after password change
         }
         changePasswordSheet.show(supportFragmentManager, "SettingsChangePasswordSheet")
     }

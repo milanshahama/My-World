@@ -18,17 +18,26 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.ms.myworld.databinding.ActivityLoginBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.lang.Exception
+import java.util.Locale
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
+    private val db = Firebase.firestore
 
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -83,15 +92,41 @@ class LoginActivity : AppCompatActivity() {
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     val isNewUser = task.result?.additionalUserInfo?.isNewUser ?: false
-                    if (isNewUser) {
-                        showSetPasswordDialog()
+                    val user = task.result?.user
+                    if (isNewUser && user != null) {
+                        createUserProfileInFirestore(user) {
+                            showSetPasswordDialog()
+                        }
                     } else {
+                        // For existing users, check if their profile has the lowercase email field.
+                        // If not, we should probably add it for consistency, but for now we'll just log in.
+                        user?.let { checkAndFixUserProfile(it) }
                         startPostLoginActivity(R.raw.ani_google)
                     }
                 } else {
                     handleAuthFailure(task.exception)
                 }
             }
+    }
+
+    // --- NEW FUNCTION TO FIX OLD PROFILES ---
+    // This function will check if an existing user's profile is missing the new field
+    // and add it if necessary.
+    private fun checkAndFixUserProfile(user: FirebaseUser) {
+        val userDocRef = db.collection("users").document(user.uid)
+        userDocRef.get().addOnSuccessListener { document ->
+            if (document != null && document.exists()) {
+                if (!document.contains("email_lowercase")) {
+                    // The field is missing, so we add it.
+                    val email = document.getString("email")
+                    if (email != null) {
+                        userDocRef.update("email_lowercase", email.toLowerCase(Locale.ROOT))
+                            .addOnSuccessListener { Log.d("PROFILE_FIX", "Successfully added lowercase email to existing user.") }
+                            .addOnFailureListener { e -> Log.e("PROFILE_FIX_ERROR", "Error updating existing user profile.", e) }
+                    }
+                }
+            }
+        }
     }
 
     private fun showSetPasswordDialog() {
@@ -118,6 +153,53 @@ class LoginActivity : AppCompatActivity() {
                     handleAuthFailure(task.exception)
                 }
             }
+    }
+
+    private fun createUserProfileInFirestore(user: FirebaseUser, onComplete: () -> Unit) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val baseId = "ms" + user.uid.take(4).toLowerCase(Locale.ROOT)
+                var shortId = baseId
+                var isUnique = false
+                var attempt = 0
+
+                while (!isUnique) {
+                    val query = db.collection("users").whereEqualTo("shortId", shortId).get().await()
+                    if (query.isEmpty) {
+                        isUnique = true
+                    } else {
+                        attempt++
+                        shortId = "$baseId$attempt"
+                    }
+                }
+
+                // --- THIS IS THE FIX ---
+                // We add a new field, email_lowercase, to save the email in all lowercase.
+                val userProfile = hashMapOf(
+                    "uid" to user.uid,
+                    "email" to user.email,
+                    "email_lowercase" to user.email?.toLowerCase(Locale.ROOT), // Save lowercase version for searching
+                    "displayName" to user.displayName,
+                    "photoUrl" to user.photoUrl.toString(),
+                    "shortId" to shortId,
+                    "createdAt" to System.currentTimeMillis()
+                )
+                // --- END OF FIX ---
+
+                db.collection("users").document(user.uid).set(userProfile).await()
+
+                withContext(Dispatchers.Main) {
+                    onComplete()
+                }
+
+            } catch (e: Exception) {
+                Log.e("FIRESTORE_ERROR", "Error creating user profile", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@LoginActivity, "Error setting up profile.", Toast.LENGTH_LONG).show()
+                    onComplete()
+                }
+            }
+        }
     }
 
     private fun handleAuthFailure(exception: Exception?) {

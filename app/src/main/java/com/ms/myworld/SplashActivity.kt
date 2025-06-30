@@ -38,7 +38,7 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun playCinematicSequence() {
-        // Entrance animations are the same
+        // Entrance animations for the logo and text
         binding.logoImageView.alpha = 0f
         binding.logoImageView.scaleX = 0.8f
         binding.logoImageView.scaleY = 0.8f
@@ -64,10 +64,13 @@ class SplashActivity : AppCompatActivity() {
             startDelay = 800
         }
 
+        // Start the initial fade-in animations
         logoAnimatorSet.start()
         sloganFadeIn.start()
         productionFadeIn.start()
 
+        // --- THIS IS THE NEW PART ---
+        // We will apply the shine animation after the text has faded in.
         val shineDelay = 2000L
         binding.root.postDelayed({
             applyShineAnimation(binding.sloganTextView)
@@ -77,6 +80,7 @@ class SplashActivity : AppCompatActivity() {
 
     // --- THIS IS THE NEW, IMPROVED SHINE ANIMATION FUNCTION ---
     private fun applyShineAnimation(textView: TextView) {
+        // Ensure the view has been measured before getting its width
         if (textView.width == 0) {
             textView.post { applyShineAnimation(textView) }
             return
@@ -110,6 +114,7 @@ class SplashActivity : AppCompatActivity() {
         animator.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 super.onAnimationEnd(animation)
+                // Reset the shader to null to remove the gradient and restore the original text color
                 textView.paint.shader = null
                 textView.setTextColor(currentTextColor)
                 textView.invalidate()

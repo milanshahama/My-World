@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_friend_requests"
+        android:title="Friend Requests"
+        android:icon="@drawable/ic_notification_badge"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_add_friend"
+        android:title="Add Friend"
+        android:icon="@drawable/ic_add_friend"
+        app:showAsAction="ifRoom" />
+
+</menu>

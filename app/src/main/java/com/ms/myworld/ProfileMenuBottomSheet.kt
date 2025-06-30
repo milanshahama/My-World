@@ -33,10 +33,17 @@ class ProfileMenuBottomSheet : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.editProfileOption.setOnClickListener {
+            mListener?.onOptionSelected("edit_profile")
+            dismiss()
+        }
+
         binding.settingsOption.setOnClickListener {
             mListener?.onOptionSelected("settings")
             dismiss()
         }
+
         binding.logoutOption.setOnClickListener {
             mListener?.onOptionSelected("logout")
             dismiss()

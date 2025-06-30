@@ -24,10 +24,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity android:name=".LoginActivity" android:exported="false" />
         <activity android:name=".PostLoginActivity" android:exported="false" />
         <activity android:name=".SettingsActivity" android:exported="false" />
         <activity android:name=".DisabledAccountActivity" android:exported="false" />
         <activity android:name=".MainActivity" android:exported="false" />
+        <activity android:name=".UserProfileActivity" android:exported="false" />
+        <activity android:name=".ChatActivity" android:exported="false" />
+        <activity android:name=".FriendRequestsActivity" android:exported="false" />
+        <activity android:name=".OneOnOneChatActivity" android:exported="false" />
+
+        <!-- This is the new activity we are adding -->
+        <activity android:name=".EditProfileActivity" android:exported="false" />
+
     </application>
 </manifest>

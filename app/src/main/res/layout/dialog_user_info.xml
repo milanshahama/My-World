@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:padding="24dp">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/dialogProfileImageView"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        app:shapeAppearanceOverlay="@style/CircleImageView"
+        tools:src="@drawable/ic_person"/>
+
+    <TextView
+        android:id="@+id/dialogDisplayNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+        tools:text="Friend's Name"/>
+
+    <TextView
+        android:id="@+id/dialogStatusTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+        android:textColor="?attr/colorSecondary"
+        tools:text="Online"/>
+
+    <TextView
+        android:id="@+id/dialogEmailTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:drawablePadding="8dp"
+        android:gravity="center"
+        app:drawableStartCompat="@drawable/ic_email"
+        tools:text="friend@example.com"/>
+
+</LinearLayout>

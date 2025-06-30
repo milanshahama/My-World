@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- A slightly tinted background color that works in both light and dark mode -->
+    <solid android:color="?attr/colorSurfaceContainer" />
+
+    <!-- Rounded corners -->
+    <corners android:radius="8dp" />
+
+</shape>

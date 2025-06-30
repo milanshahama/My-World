@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Layer 1: The main icon -->
+    <item
+        android:drawable="@drawable/ic_friend_requests"
+        android:gravity="center" />
+    <!-- Layer 2: The notification dot -->
+    <item
+        android:id="@+id/ic_badge"
+        android:drawable="@drawable/red_dot_background_small"
+        android:gravity="top|end" />
+</layer-list>
