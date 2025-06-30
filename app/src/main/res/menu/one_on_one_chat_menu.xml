@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Icons to show on the toolbar -->
+    <item
+        android:id="@+id/menu_voice_call"
+        android:title="Voice Call"
+        android:icon="@drawable/ic_voice_call"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_video_call"
+        android:title="Video Call"
+        android:icon="@drawable/ic_video_call"
+        app:showAsAction="ifRoom" />
+
+    <!-- Items for the three-dot overflow menu -->
+    <item
+        android:id="@+id/menu_view_profile"
+        android:title="View Profile"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_clear_chat"
+        android:title="Clear Chat"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_search"
+        android:title="Search"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_block_user"
+        android:title="Block (coming soon)"
+        app:showAsAction="never" />
+
+</menu>
